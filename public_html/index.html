@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Index Page</title>
+</head>
+<body>
+
+    <div>
+        <table>
+            <tr>
+                <td>Division Name</td>
+                <td><input type="text" placeholder="Division name" id="divison_name"/></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <button onclick="addDivision()">Add division</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <hr/>
+    <div>
+        <table>
+            <tr>
+                <td>Employee ID</td>
+                <td><input type="text" placeholder="Employee id" id="emp_id"/></td>
+            </tr>
+            <tr>
+                <td>Employee name</td>
+                <td><input type="text" placeholder="Employee name" id="emp_name"/></td>
+            </tr>
+            <tr>
+                <td>Division List</td>
+                <td>
+                    <select id="division_list">
+
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <button onclick="saveEmp()">Save Employee</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div>
+        <a href="http://localhost:9600/list">List Employee of division</a>
+    </div>
+</body>
+    <script>
+
+        var divisionList = document.getElementById("division_list");
+
+        function addDivision(){
+            var divisionName = document.getElementById("divison_name");
+
+            var xhrDiv = new XMLHttpRequest();
+            xhrDiv.open("POST","http://localhost:9600/div");
+            xhrDiv.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+
+            xhrDiv.onreadystatechange = function () {
+                if(xhrDiv.readyState === 4 && xhrDiv.status ===200){
+                    console.log(xhrDiv.responseText);
+                    loadDivision();
+                }
+            }
+
+            var url2 =new URLSearchParams();
+            url2.append("division_name",divisionName.value);
+
+            xhrDiv.send(url2.toString());
+        }
+        function saveEmp(){
+            var empId = document.getElementById("emp_id");
+            var empName = document.getElementById("emp_name");
+            var divisionSelected = document.getElementById("division_list").value;
+
+            var xhr1 = new XMLHttpRequest();
+
+            xhr1.open("POST","http://localhost:9600/emp");
+            xhr1.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+
+
+            var urlSearch = new URLSearchParams();
+
+            urlSearch.append("id",empId.value);
+            urlSearch.append("name",empName.value);
+            urlSearch.append("division_id",divisionSelected);
+
+            xhr1.onreadystatechange = function(){
+                if(xhr1.readyState === 4 && xhr1.status === 200){
+                    console.log(xhr1.responseText);
+                    document.getElementById("emp_id").value = "";
+                    document.getElementById("emp_name").value = "";
+                }
+            }
+
+            xhr1.send(urlSearch.toString());
+        }
+
+        function loadDivision(){
+            var xhr3 = new XMLHttpRequest();
+            xhr3.open("GET","http://localhost:9600/div");
+
+            xhr3.onreadystatechange = function () {
+                if(xhr3.readyState === 4 && xhr3.status === 200){
+                    var jsonArr = JSON.parse(xhr3.responseText);
+                    divisionList.innerHTML = null;
+
+                    jsonArr.forEach(function (value) {
+                        var option = document.createElement("option");
+
+                        option.value = value.id;
+                        option.innerHTML = value.division_name;
+                        divisionList.append(option);
+                    });
+                }
+            }
+            xhr3.send();
+        }
+
+        loadDivision();
+    </script>
+</html>

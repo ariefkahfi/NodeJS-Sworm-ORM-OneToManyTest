@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>List Page</title>
+</head>
+<body>
+    <div>
+        <select id="division_list" onchange="onSelectChange(event)">
+
+        </select>
+    </div>
+
+    <div>
+        <table id="table" border="2">
+
+        </table>
+    </div>
+</body>
+    <script>
+
+        function addDataToTable(data){
+            var table = document.getElementById("table");
+
+            table.innerHTML= null;
+
+            data.forEach(function (value) {
+                var newTr = document.createElement("tr");
+
+                var tdName = document.createElement("td");
+                var tdDivisionName = document.createElement("td");
+                var tdDelete = document.createElement("td");
+
+                tdName.innerHTML = value.name;
+                tdDivisionName.innerHTML = value.division_name;
+                tdDelete.innerHTML = `<button onclick="requestDelete('${value.id}')">Delete</button>`;
+
+                newTr.append(tdName);
+                newTr.append(tdDivisionName);
+                newTr.append(tdDelete);
+
+                table.append(newTr);
+            });
+        }
+
+        function requestDelete(employee_id) {
+            var xhrDelete = new XMLHttpRequest();
+            xhrDelete.open("GET","http://localhost:9600/emp/delete/"+employee_id);
+            xhrDelete.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+
+            xhrDelete.onreadystatechange = function () {
+              if(xhrDelete.readyState === 4 && xhrDelete.status === 200){
+                    console.log(xhrDelete.responseText);
+                    document.getElementById("table").innerHTML = null;
+              }
+            };
+            xhrDelete.send();
+        }
+
+        function onSelectChange(event){
+            var divisionId = event.target.value;
+            var xhrE = new XMLHttpRequest();
+            xhrE.open("POST","http://localhost:9600/data");
+            xhrE.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+            xhrE.onreadystatechange = function () {
+                if(xhrE.readyState ===4 && xhrE.status === 200){
+                    var jsonArr = JSON.parse(xhrE.responseText);
+                    addDataToTable(jsonArr);
+                }
+            }
+
+            xhrE.send("id="+divisionId);
+        }
+
+        var divisionList = document.getElementById("division_list");
+
+        function loadDivision(){
+            var xhr3 = new XMLHttpRequest();
+            xhr3.open("GET","http://localhost:9600/div");
+
+            xhr3.onreadystatechange = function () {
+                if(xhr3.readyState === 4 && xhr3.status === 200){
+                    var jsonArr = JSON.parse(xhr3.responseText);
+                    divisionList.innerHTML = null;
+
+                    jsonArr.forEach(function (value) {
+                        var option = document.createElement("option");
+
+                        option.value = value.id;
+                        option.innerHTML = value.division_name;
+                        divisionList.append(option);
+                    });
+                }
+            }
+            xhr3.send();
+        }
+
+        loadDivision();
+    </script>
+</html>
